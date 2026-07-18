@@ -1,0 +1,24 @@
+node_modules/
+.next/
+dist/
+.wrangler/
+.cache/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Exportações e dados locais do WhatsApp nunca devem entrar no repositório.
+.data/
+*.zip
+_chat.txt
+WhatsApp Chat*/
+chat-exports/
+test-conversations/
+
+# Implementação legada local, substituída pelo aplicativo em app/.
+/public/
+/server.js
+/render.js
