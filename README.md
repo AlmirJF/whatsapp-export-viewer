@@ -1,6 +1,10 @@
-# Conversa Clara
+# WhatsApp Export Viewer
 
-Visualizador privado de conversas exportadas do WhatsApp.
+Abra e leia conversas exportadas do WhatsApp diretamente no navegador.
+O projeto transforma o arquivo ZIP em uma interface simples, pesquisável e
+familiar, sem exigir instalação ou cadastro.
+
+> WhatsApp Export Chat Viewer para arquivos ZIP, com processamento 100% local.
 
 O arquivo ZIP é aberto e processado localmente pelo navegador. As conversas e
 mídias não são enviadas para um servidor externo.
@@ -33,4 +37,5 @@ O código não está vinculado à hospedagem Sites do GPT. O build usa Vinext e
 permanece compatível com um ambiente Cloudflare Workers, caso uma hospedagem
 seja configurada futuramente.
 
-Este é um produto independente e não afiliado ao WhatsApp.
+WhatsApp é uma marca comercial da WhatsApp LLC. Este é um produto independente,
+sem afiliação, patrocínio ou endosso da WhatsApp LLC.

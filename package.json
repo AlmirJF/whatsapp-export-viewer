@@ -1,8 +1,8 @@
 {
-  "name": "conversa-clara",
+  "name": "whatsapp-export-viewer",
   "version": "1.0.0",
   "private": true,
-  "description": "Visualizador privado de conversas exportadas do WhatsApp.",
+  "description": "Open exported WhatsApp ZIP chats privately in your browser.",
   "engines": {
     "node": ">=22.13.0"
   },

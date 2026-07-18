@@ -332,9 +332,9 @@ export default function ChatViewer() {
     return (
       <main className={`landing${darkMode ? " dark" : ""}`}>
         <header className="landingNav">
-          <a className="brand" href="#inicio" aria-label="Conversa Clara — início">
+          <a className="brand" href="#inicio" aria-label="WhatsApp Export Viewer — início">
             <MessageCircleMore aria-hidden="true" className="brandIcon" />
-            <span>Conversa Clara</span>
+            <span>WhatsApp Export Viewer</span>
           </a>
           <nav aria-label="Navegação principal">
             <a href="#privacidade">Privacidade</a>
@@ -350,9 +350,9 @@ export default function ChatViewer() {
         <section className="hero" id="inicio">
           <div className="heroCopy">
             <span className="eyebrow"><span className="statusDot" /> Gratuito e sem cadastro</span>
-            <h1>Suas conversas,<br /><em>no seu computador.</em></h1>
+            <h1>Abra conversas exportadas<br /><em>do WhatsApp no navegador.</em></h1>
             <p className="heroLead">
-              Importe o ZIP exportado pelo WhatsApp para buscar mensagens, rever mídias e entender toda a conversa com calma.
+              Transforme o ZIP exportado pelo WhatsApp em uma conversa fácil de ler, pesquisar e navegar — sem instalar nada.
             </p>
             <div className="privacyPromise">
               <ShieldCheck aria-hidden="true" className="privacyShieldIcon" />
@@ -470,7 +470,7 @@ export default function ChatViewer() {
         </section>
 
         <footer className="landingFooter">
-          <span className="brand"><MessageCircleMore aria-hidden="true" className="brandIcon" />Conversa Clara</span>
+          <span className="brand"><MessageCircleMore aria-hidden="true" className="brandIcon" />WhatsApp Export Viewer</span>
           <p>Privacidade não é um recurso extra. É a base do produto.</p>
         </footer>
       </main>
@@ -482,7 +482,7 @@ export default function ChatViewer() {
       <header className="appTopbar">
         <button className="brand brandButton" onClick={() => setMobileView("chats")}>
           <MessageCircleMore aria-hidden="true" className="brandIcon" />
-          <span>Conversa Clara</span>
+          <span>WhatsApp Export Viewer</span>
         </button>
         <PrivacySeal compact />
         <AdSlot compact />
