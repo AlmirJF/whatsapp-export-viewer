@@ -24,6 +24,12 @@ Para validar a versão de produção:
 npm run build
 ```
 
+## Docker e VPS
+
+O repositório inclui uma imagem Docker endurecida, Caddy com HTTPS automático e
+Portainer acessível somente por túnel SSH. Consulte [DEPLOYMENT.md](DEPLOYMENT.md)
+para criar e operar a instalação na VPS.
+
 ## Privacidade
 
 - Todo o processamento das conversas acontece no dispositivo do usuário.
