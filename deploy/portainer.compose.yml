@@ -1,0 +1,24 @@
+name: portainer
+
+services:
+  portainer:
+    image: portainer/portainer-ce:2.39.4
+    container_name: portainer
+    restart: always
+    ports:
+      # Keep the administration panel private. Access it with an SSH tunnel.
+      - "127.0.0.1:9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  portainer_data:
+    name: portainer_data

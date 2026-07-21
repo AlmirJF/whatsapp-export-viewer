@@ -1,0 +1,25 @@
+.git
+.github
+.openai
+node_modules
+dist
+.next
+.wrangler
+.cache
+*.log
+.env
+.env.*
+!.env.example
+
+# WhatsApp exports and local test data must never enter the build context.
+.data
+*.zip
+_chat.txt
+WhatsApp Chat*
+chat-exports
+test-conversations
+
+# Local legacy implementation, not part of this application.
+public
+server.js
+render.js
