@@ -15,12 +15,13 @@
   "dependencies": {
     "jszip": "3.10.1",
     "lucide-react": "^1.24.0",
-    "next": "16.2.6",
+    "next": "16.2.12",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },
   "overrides": {
-    "postcss": "8.5.10"
+    "postcss": "8.5.23",
+    "sharp": "0.35.3"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
