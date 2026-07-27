@@ -37,38 +37,46 @@ if [[ ! -f $RELEASE_DIR/compose.yml || ! -f $RELEASE_DIR/Dockerfile ]]; then
 fi
 
 install -d -m 0755 "$APP_ROOT/shared"
-printf 'SITE_ADDRESS=%s\n' "$SITE_ADDRESS" >"$APP_ROOT/shared/.env"
+if [[ $SITE_ADDRESS =~ ^https?:// ]]; then
+  PUBLIC_ORIGIN=$SITE_ADDRESS
+else
+  PUBLIC_ORIGIN="https://$SITE_ADDRESS"
+fi
+printf 'SITE_ADDRESS=%s\nPUBLIC_ORIGIN=%s\n' "$SITE_ADDRESS" "$PUBLIC_ORIGIN" >"$APP_ROOT/shared/.env"
 chmod 0600 "$APP_ROOT/shared/.env"
 
 cd "$RELEASE_DIR"
 
 docker compose --env-file "$APP_ROOT/shared/.env" config --quiet
-docker compose --env-file "$APP_ROOT/shared/.env" build --pull app
+docker compose --env-file "$APP_ROOT/shared/.env" build --pull app metrics
 docker compose --env-file "$APP_ROOT/shared/.env" up -d --remove-orphans
 
-APP_CONTAINER=$(docker compose --env-file "$APP_ROOT/shared/.env" ps -q app)
-if [[ -z $APP_CONTAINER ]]; then
-  echo "Application container was not created." >&2
-  exit 1
-fi
-
-for _ in $(seq 1 60); do
-  HEALTH=$(docker inspect --format '{{.State.Health.Status}}' "$APP_CONTAINER")
-  if [[ $HEALTH == "healthy" ]]; then
-    break
-  fi
-  if [[ $HEALTH == "unhealthy" ]]; then
-    docker compose --env-file "$APP_ROOT/shared/.env" logs --tail=100 app caddy
+for SERVICE in app metrics; do
+  CONTAINER=$(docker compose --env-file "$APP_ROOT/shared/.env" ps -q "$SERVICE")
+  if [[ -z $CONTAINER ]]; then
+    echo "Container for $SERVICE was not created." >&2
     exit 1
   fi
-  sleep 1
-done
 
-if [[ ${HEALTH:-starting} != "healthy" ]]; then
-  docker compose --env-file "$APP_ROOT/shared/.env" logs --tail=100 app caddy
-  echo "Application health check timed out." >&2
-  exit 1
-fi
+  HEALTH=starting
+  for _ in $(seq 1 60); do
+    HEALTH=$(docker inspect --format '{{.State.Health.Status}}' "$CONTAINER")
+    if [[ $HEALTH == "healthy" ]]; then
+      break
+    fi
+    if [[ $HEALTH == "unhealthy" ]]; then
+      docker compose --env-file "$APP_ROOT/shared/.env" logs --tail=100 app metrics caddy
+      exit 1
+    fi
+    sleep 1
+  done
+
+  if [[ $HEALTH != "healthy" ]]; then
+    docker compose --env-file "$APP_ROOT/shared/.env" logs --tail=100 app metrics caddy
+    echo "Health check for $SERVICE timed out." >&2
+    exit 1
+  fi
+done
 
 ln -sfn "$RELEASE_DIR" "$APP_ROOT/current.next"
 mv -Tf "$APP_ROOT/current.next" "$APP_ROOT/current"

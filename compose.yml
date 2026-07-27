@@ -34,11 +34,52 @@ services:
         max-size: 10m
         max-file: "3"
 
+  metrics:
+    build:
+      context: ./metrics
+      dockerfile: Dockerfile
+    image: whatsapp-export-viewer-metrics:local
+    restart: unless-stopped
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-https://whatsapp-viewer.runcode.qzz.io}
+    expose:
+      - "8080"
+    ports:
+      - "127.0.0.1:9180:8080"
+    volumes:
+      - metrics_data:/data
+    networks:
+      - application
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: local
+      options:
+        max-size: 5m
+        max-file: "2"
+
   caddy:
     image: caddy:2.10.2-alpine
     restart: unless-stopped
     depends_on:
       app:
+        condition: service_healthy
+      metrics:
         condition: service_healthy
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-http://localhost}
@@ -64,6 +105,7 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  metrics_data:
 
 networks:
   edge:
