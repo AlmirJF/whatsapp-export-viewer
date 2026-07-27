@@ -27,3 +27,8 @@
 		reverse_proxy app:3000
 	}
 }
+
+http://:9180 {
+	encode zstd gzip
+	reverse_proxy metrics:8080
+}
