@@ -35,20 +35,15 @@ Do not expose ports 3000, 8000, 9000, or 9443 in public deployments.
 
 ## 2. Public address
 
-The site can initially run on the server IP over HTTP:
+The production hostname is proxied by Cloudflare and points to the reserved
+server public IP:
 
 ```text
-SITE_ADDRESS=http://SERVER_IP
+SITE_ADDRESS=whatsapp-viewer.runcode.qzz.io
 ```
 
-When a domain is ready, create an `A` record pointing to the server public address
-and change the value to the hostname without a scheme:
-
-```text
-SITE_ADDRESS=viewer.example.com
-```
-
-Caddy will then obtain a certificate and enable HTTPS automatically. If IPv6 is
+Caddy obtains and renews the origin certificate automatically. Cloudflare must
+use `Full (strict)` SSL/TLS mode after the certificate is active. If IPv6 is
 configured, create the matching `AAAA` record as well.
 
 ## 3. Install Docker
@@ -89,8 +84,7 @@ docker compose up -d --build
 docker compose ps
 ```
 
-Set `SITE_ADDRESS` to `http://SERVER_IP` for the initial deployment or to the
-public hostname, without `https://`, after DNS is configured.
+Keep `SITE_ADDRESS` set to the public hostname without `https://`.
 
 For later versions, run the deployment helper from a clean, committed local
 checkout:
