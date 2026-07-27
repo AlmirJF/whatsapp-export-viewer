@@ -191,6 +191,9 @@ a { color: inherit; }
 .faqItem > svg.expanded { transform: rotate(180deg); }
 .landingFooter { padding: 35px clamp(24px, 5vw, 78px); background: var(--ink); color: var(--surface); display: flex; justify-content: space-between; align-items: center; }
 .landingFooter p { color: color-mix(in srgb, var(--surface) 62%, transparent); font-size: 12px; }
+.landingFooterMeta { display: flex; align-items: center; gap: 18px; }
+.landingFooterMeta a { color: color-mix(in srgb, var(--surface) 80%, transparent); font-size: 12px; text-underline-offset: 3px; }
+.landingFooterMeta a:hover { color: var(--surface); }
 
 /* Aplicativo */
 .viewer { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -354,6 +357,7 @@ a { color: inherit; }
   .sectionIntro .eyebrow { margin-bottom: 17px; }
   .howSection, .faqSection { padding: 70px 20px; }
   .landingFooter { align-items: flex-start; flex-direction: column; gap: 15px; }
+  .landingFooterMeta { align-items: flex-start; flex-direction: column; gap: 8px; }
 
   .viewer { height: 100dvh; }
   .appTopbar { min-height: 56px; height: 56px; padding: 0 12px; }

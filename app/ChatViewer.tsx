@@ -503,7 +503,10 @@ export default function ChatViewer() {
 
         <footer className="landingFooter">
           <span className="brand"><MessageCircleMore aria-hidden="true" className="brandIcon" />WhatsApp Export Viewer</span>
-          <p>Privacidade não é um recurso extra. É a base do produto.</p>
+          <div className="landingFooterMeta">
+            <p>Privacidade não é um recurso extra. É a base do produto.</p>
+            <a href="/llms.txt" target="_blank" rel="noreferrer">Informações para agentes de IA</a>
+          </div>
         </footer>
       </main>
     );
