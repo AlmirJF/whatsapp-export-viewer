@@ -34,6 +34,8 @@ para criar e operar a instalação na VPS.
 
 - Todo o processamento das conversas acontece no dispositivo do usuário.
 - O projeto não possui endpoint para receber arquivos de conversa.
+- Somente os dados digitados voluntariamente no formulário de contato são
+  enviados e armazenados no serviço interno, com retenção máxima de 12 meses.
 - Exportações `.zip`, `_chat.txt` e diretórios de teste são ignorados pelo Git.
 - O repositório não contém conversas, mídias ou dados pessoais usados durante o desenvolvimento.
 

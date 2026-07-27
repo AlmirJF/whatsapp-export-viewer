@@ -24,6 +24,15 @@
 		reverse_proxy metrics:8080
 	}
 
+	@contact {
+		method POST
+		path /__contact
+	}
+
+	handle @contact {
+		reverse_proxy metrics:8080
+	}
+
 	handle {
 		reverse_proxy app:3000
 	}

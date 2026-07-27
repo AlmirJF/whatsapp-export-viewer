@@ -225,9 +225,28 @@ a { color: inherit; }
 .legalNotice.warning { display: flex; align-items: flex-start; gap: 13px; background: color-mix(in srgb, var(--peach) 55%, var(--surface)); border-color: color-mix(in srgb, var(--red) 20%, var(--line)); color: var(--ink); }
 .legalNotice.warning > svg { width: 21px; height: 21px; color: var(--red); flex: 0 0 auto; }
 .legalNotice.warning p { color: var(--muted); }
-.contactButton { width: fit-content; margin-top: 22px; padding: 12px 16px; border-radius: 7px; background: var(--green); color: #fff !important; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
-.contactButton:hover { background: var(--green-dark); }
-.contactButton svg { width: 16px; height: 16px; }
+.contactFormSection > p { max-width: 700px; }
+.contactForm { position: relative; margin-top: 25px; display: grid; gap: 17px; }
+.contactFormGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.contactForm label:not(.contactConsent, .contactTrap) { display: grid; gap: 7px; color: var(--ink); font-size: 12px; font-weight: 800; }
+.contactForm input:not([type="checkbox"]), .contactForm select, .contactForm textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); outline: 0; }
+.contactForm input:not([type="checkbox"]), .contactForm select { height: 46px; padding: 0 13px; }
+.contactForm textarea { min-height: 150px; padding: 12px 13px; resize: vertical; line-height: 1.55; }
+.contactForm input:focus, .contactForm select:focus, .contactForm textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 13%, transparent); }
+.contactForm label > small { color: var(--muted); font-size: 11px; font-weight: 500; line-height: 1.5; }
+.contactConsent { display: flex; align-items: flex-start; gap: 9px; color: var(--muted); font-size: 12px; line-height: 1.55; cursor: pointer; }
+.contactConsent input { width: 17px; height: 17px; margin: 1px 0 0; flex: 0 0 auto; accent-color: var(--green); }
+.contactConsent a { font-weight: 800; }
+.contactTrap { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.contactFormFooter { min-height: 45px; display: flex; align-items: center; gap: 16px; }
+.contactSubmit { min-height: 44px; padding: 0 17px; border: 0; border-radius: 8px; background: var(--green); color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.contactSubmit:hover:not(:disabled) { background: var(--green-dark); }
+.contactSubmit:disabled { opacity: .65; cursor: wait; }
+.contactSubmit svg { width: 16px; height: 16px; }
+.contactFormStatus { margin: 0 !important; color: var(--green-dark) !important; display: inline-flex; align-items: center; gap: 7px; font-size: 12px !important; font-weight: 700; }
+.contactFormStatus:empty { display: none; }
+.contactFormStatus svg { width: 17px; height: 17px; }
+.contactFormStatus.error { color: var(--red) !important; }
 .legalFooter { margin-top: auto; }
 
 /* Aplicativo */
@@ -403,6 +422,8 @@ a { color: inherit; }
   .legalArticle section { padding: 26px 0; }
   .legalArticle h2 { font-size: 21px; }
   .legalArticle p, .legalArticle li { font-size: 14px; }
+  .contactFormGrid { grid-template-columns: 1fr; }
+  .contactFormFooter { align-items: flex-start; flex-direction: column; }
 
   .viewer { height: 100dvh; }
   .appTopbar { min-height: 56px; height: 56px; padding: 0 12px; }
