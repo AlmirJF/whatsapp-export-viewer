@@ -7,7 +7,6 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY app ./app
-COPY site-public ./site-public
 COPY worker ./worker
 COPY next.config.ts tsconfig.json vite.config.ts ./
 
