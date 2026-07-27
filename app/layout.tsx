@@ -33,21 +33,6 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  openGraph: {
-    title,
-    description,
-    type: "website",
-    url: siteUrl,
-    siteName: "WhatsApp Export Viewer",
-    locale: "pt_BR",
-    images: [{ url: "/og.png", width: 1728, height: 915, alt: "WhatsApp Export Viewer — abra conversas exportadas no navegador" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title,
-    description,
-    images: ["/og.png"],
-  },
 };
 
 const structuredData = {
