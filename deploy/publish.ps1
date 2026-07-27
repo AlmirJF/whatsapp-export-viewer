@@ -13,7 +13,7 @@ param(
 
   [Parameter()]
   [ValidatePattern('^(https?://)?[A-Za-z0-9.-]+(:[0-9]{1,5})?$')]
-  [string]$SiteAddress = 'http://137.131.154.57',
+  [string]$SiteAddress = 'whatsapp-viewer.runcode.qzz.io',
 
   [Parameter()]
   [ValidatePattern('^[A-Za-z0-9._/-]+$')]
