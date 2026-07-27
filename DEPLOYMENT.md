@@ -8,11 +8,12 @@ container. The application has no upload route and no conversation volume.
 
 - Caddy is the only public container and listens on ports 80 and 443.
 - The application listens only on an internal Docker network.
-- The metrics service stores only daily aggregate counters in a named volume.
+- The internal service stores daily aggregate counters and voluntary contact
+  requests in a named volume.
 - Its dashboard listens only on `127.0.0.1:9180` on the server.
 - Portainer listens only on `127.0.0.1:9443` on the server.
 - Caddy obtains and renews the public TLS certificate automatically.
-- Portainer, Caddy, and aggregate metrics state are kept in named Docker
+- Portainer, Caddy, metrics, and contact request state are kept in named Docker
   volumes; the application is read-only and has no persistent conversation
   data.
 
@@ -82,11 +83,13 @@ Then open `https://localhost:9443`. The first certificate warning is expected
 because Portainer uses its own self-signed certificate. Create the administrator
 account immediately. The tunnel must remain open while using the panel.
 
-## 5. Open the private metrics dashboard
+## 5. Open the private dashboard
 
-The dashboard shows visits, import attempts, successful imports, and errors. It
-does not store IP addresses, user agents, filenames, URLs, chat contents, or
-chat metadata.
+The dashboard shows visits, import attempts, successful imports, errors, and
+contact requests voluntarily submitted through the public form. Metrics do not
+store IP addresses, user agents, filenames, URLs, chat contents, or chat
+metadata. Contact requests contain the name, email, category, subject, and
+message provided by the sender and are automatically removed after 12 months.
 
 From the administrator's computer:
 
@@ -145,6 +148,7 @@ ss -lntup
 The public listener list must not contain ports 3000, 8000, 9000, 9180, or
 9443.
 Import a disposable test ZIP in the browser, then confirm the browser network
-panel contains no request with that ZIP or its message contents. The only
+panel contains no request with that ZIP or its message contents. The
 application-owned metrics requests are empty POSTs to fixed `/__metrics/*`
-paths.
+paths. Only the separate contact form sends the fields typed into it to
+`/__contact`; it does not accept files.

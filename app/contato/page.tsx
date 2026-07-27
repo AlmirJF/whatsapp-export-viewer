@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { ExternalLink, ShieldAlert } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import LegalPage from "../LegalPage";
+import ContactForm from "./ContactForm";
 
 export const metadata: Metadata = {
   title: "Contato | WhatsApp Export Viewer",
@@ -23,13 +24,10 @@ export default function ContactPage() {
         </div>
       </aside>
 
-      <section>
-        <h2>Canal disponível</h2>
-        <p>Enquanto preparamos um canal dedicado, o contato é feito pelo perfil do responsável no GitHub. Você pode abrir uma conversa pelo link abaixo e informar o assunto sem incluir dados pessoais da conversa.</p>
-        <a className="contactButton" href="https://github.com/AlmirJF" target="_blank" rel="noreferrer">
-          Acessar perfil no GitHub
-          <ExternalLink aria-hidden="true" />
-        </a>
+      <section className="contactFormSection">
+        <h2>Envie sua solicitação</h2>
+        <p>Os dados abaixo serão armazenados no servidor privado do projeto somente para analisar e responder ao seu contato.</p>
+        <ContactForm />
       </section>
 
       <section>
