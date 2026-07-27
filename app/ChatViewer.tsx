@@ -57,8 +57,21 @@ interface Conversation {
 
 type MobileView = "chats" | "messages" | "details";
 type MediaFilter = "all" | "text" | "image" | "video" | "audio" | "document";
+type MetricEvent = "visit" | "import-started" | "import-succeeded" | "import-failed";
 
 const initialLimit = 240;
+const visitSessionKey = "whatsapp_viewer_visit_counted_v1";
+
+function recordMetric(event: MetricEvent) {
+  void fetch(`/__metrics/${event}`, {
+    method: "POST",
+    credentials: "omit",
+    cache: "no-store",
+    keepalive: true,
+  }).catch(() => {
+    // Metrics are best-effort and must never interrupt local chat processing.
+  });
+}
 
 function initials(name: string) {
   return name
@@ -117,8 +130,8 @@ function PrivacySeal({ compact = false }: { compact?: boolean }) {
     <div className={`privacySeal${compact ? " compact" : ""}`}>
       <LockKeyhole aria-hidden="true" className="uiIcon" />
       <span>
-        <strong>100% local</strong>
-        {!compact && <small>Nada é enviado para servidores externos</small>}
+        <strong>Arquivos 100% locais</strong>
+        {!compact && <small>Conversas nunca são enviadas para servidores externos</small>}
       </span>
     </div>
   );
@@ -168,6 +181,17 @@ export default function ChatViewer() {
   }, [error]);
 
   useEffect(() => {
+    let shouldCount = true;
+    try {
+      shouldCount = sessionStorage.getItem(visitSessionKey) !== "1";
+      if (shouldCount) sessionStorage.setItem(visitSessionKey, "1");
+    } catch {
+      // A blocked sessionStorage should not affect the viewer.
+    }
+    if (shouldCount) recordMetric("visit");
+  }, []);
+
+  useEffect(() => {
     return () => {
       conversationsRef.current.forEach((conversation) => {
         conversation.objectUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -184,6 +208,7 @@ export default function ChatViewer() {
 
     setError("");
     setImporting(true);
+    recordMetric("import-started");
     const imported: Conversation[] = [];
 
     try {
@@ -259,10 +284,12 @@ export default function ChatViewer() {
       setConversations((current) => [...current, ...imported]);
       setActiveId(imported[0]?.id ?? null);
       setMobileView("messages");
+      recordMetric("import-succeeded");
       setTimeout(() => setImporting(false), 450);
     } catch (caught) {
       imported.forEach((conversation) => conversation.objectUrls.forEach((url) => URL.revokeObjectURL(url)));
       setImporting(false);
+      recordMetric("import-failed");
       setError(caught instanceof Error ? caught.message : "Não foi possível abrir o arquivo.");
     }
   }, []);
@@ -359,6 +386,9 @@ export default function ChatViewer() {
               <p>
                 <strong>Nenhum arquivo é enviado para nós.</strong>
                 Tudo é aberto e processado somente na memória do seu navegador, no seu próprio computador.
+                <span className="privacyMetricsNote">
+                  Métricas técnicas medem visitas, desempenho e resultado da abertura. ZIP, nome de arquivo e conteúdo nunca fazem parte delas.
+                </span>
               </p>
             </div>
             <div className="heroActions">
@@ -437,6 +467,7 @@ export default function ChatViewer() {
           <div><span className="trustNumber">01</span><p><strong>Processamento local</strong><small>O ZIP é lido pelo seu navegador</small></p></div>
           <div><span className="trustNumber">02</span><p><strong>Zero armazenamento</strong><small>Não criamos cópias em servidores</small></p></div>
           <div><span className="trustNumber">03</span><p><strong>Sessão temporária</strong><small>Fechou a aba, os dados desaparecem</small></p></div>
+          <div><span className="trustNumber">04</span><p><strong>Métricas sem conversas</strong><small>Somente sinais técnicos e agregados</small></p></div>
         </section>
 
         <AdSlot />
@@ -459,6 +490,7 @@ export default function ChatViewer() {
             {[
               ["Minhas conversas são enviadas para algum servidor?", "Não. A leitura e a organização acontecem no próprio navegador. O ZIP e as mensagens permanecem no seu computador."],
               ["O site guarda uma cópia depois?", "Não. Não há cadastro nem banco de dados de conversas. Ao fechar a aba ou limpar a sessão, o conteúdo sai da memória do navegador."],
+              ["O que o site mede?", "Nosso contador guarda apenas totais diários de visitas e de aberturas iniciadas, concluídas ou com erro, sem IP ou navegador. A Cloudflare mede visualizações e desempenho sem coletar dados pessoais. Nenhuma dessas métricas recebe o ZIP, nome de arquivo, conteúdo ou metadados da conversa."],
               ["Por que o serviço é gratuito?", "Espaços pequenos e discretos de publicidade ajudam a manter o site gratuito sem interferir na leitura da conversa."],
             ].map(([question, answer], index) => (
               <button key={question} className="faqItem" onClick={() => setShowFaq(showFaq === index ? null : index)} aria-expanded={showFaq === index}>

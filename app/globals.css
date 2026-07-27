@@ -108,6 +108,7 @@ a { color: inherit; }
 .privacyPromise { display: flex; gap: 14px; align-items: flex-start; max-width: 610px; padding: 17px 18px; background: var(--green-pale); border-left: 3px solid var(--green); border-radius: 0 12px 12px 0; }
 .privacyPromise p { margin: 0; font-size: 14px; line-height: 1.55; }
 .privacyPromise strong { display: block; }
+.privacyMetricsNote { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .privacyShieldIcon { width: 25px; height: 25px; color: var(--green); flex: 0 0 auto; stroke-width: 1.9; }
 .heroActions { margin-top: 30px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
 .primaryButton { border: 0; border-radius: 8px; padding: 15px 22px; background: var(--green); color: #fff; font-weight: 800; cursor: pointer; box-shadow: 0 7px 18px color-mix(in srgb, var(--green) 26%, transparent); display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
@@ -159,7 +160,7 @@ a { color: inherit; }
 .floatingTrust strong { font-size: 11px; }
 .floatingTrust small { color: var(--muted); font-size: 9px; margin-top: 2px; }
 
-.trustBar { max-width: 1220px; margin: 0 auto 35px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, 1fr); }
+.trustBar { max-width: 1220px; margin: 0 auto 35px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); }
 .trustBar > div { display: flex; gap: 18px; align-items: center; padding: 25px 30px; }
 .trustBar > div + div { border-left: 1px solid var(--line); }
 .trustNumber { font-family: var(--font-display); font-weight: 800; color: var(--green); font-size: 13px; }

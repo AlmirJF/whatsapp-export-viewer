@@ -3,6 +3,8 @@ node_modules/
 dist/
 .wrangler/
 .cache/
+__pycache__/
+*.py[cod]
 *.log
 .env
 .env.*
