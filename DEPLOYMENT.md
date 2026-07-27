@@ -49,6 +49,10 @@ Caddy obtains and renews the origin certificate automatically. Cloudflare must
 use `Full (strict)` SSL/TLS mode after the certificate is active. If IPv6 is
 configured, create the matching `AAAA` record as well.
 
+Cloudflare Web Analytics is installed with the public site token in
+`app/layout.tsx`. It reports page views and performance data without receiving
+WhatsApp files or conversation contents.
+
 ## 3. Install Docker
 
 Clone this repository on the server using an SSH deploy key, then run:
