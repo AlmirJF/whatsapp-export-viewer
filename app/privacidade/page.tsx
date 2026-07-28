@@ -74,7 +74,8 @@ export default function PrivacyPage() {
 
       <section>
         <h2>9. Segurança e alterações</h2>
-        <p>Adotamos HTTPS, cabeçalhos de segurança, isolamento dos serviços e dependências mantidas para reduzir riscos. Nenhum sistema é infalível; por isso, evite usar computadores compartilhados e mantenha seu navegador atualizado.</p>
+        <p>Adotamos HTTPS, cabeçalhos de segurança, isolamento dos serviços e dependências mantidas para reduzir riscos. O visualizador também limita a quantidade e o tamanho do conteúdo descompactado e não abre anexos executáveis, scripts, páginas, arquivos compactados ou formatos desconhecidos.</p>
+        <p>Documentos permitidos são abertos a partir de uma referência temporária criada pelo próprio navegador. O site não hospeda esses arquivos nem oferece arquivos externos para download. Nenhum sistema é infalível; por isso, evite usar computadores compartilhados e mantenha seu navegador atualizado.</p>
         <p>Podemos atualizar esta política quando o funcionamento do site, os fornecedores ou a legislação mudarem. A data no início da página indica a versão vigente.</p>
       </section>
     </LegalPage>

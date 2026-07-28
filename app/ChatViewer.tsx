@@ -7,7 +7,7 @@ import {
   BarChart3,
   Check,
   ChevronDown,
-  Download,
+  ExternalLink,
   FileArchive,
   FileText,
   FolderOpen,
@@ -33,6 +33,14 @@ import {
   mediaKind,
   parseWhatsAppChat,
 } from "./chat-parser";
+import {
+  ZIP_LIMITS,
+  archiveSelectionError,
+  attachmentAccess,
+  blockedAttachmentReason,
+  formatFileSize,
+  zipStructureError,
+} from "./file-safety";
 import {
   type ChangeEvent,
   type DragEvent,
@@ -102,8 +110,30 @@ function fileMime(filename: string) {
     aac: "audio/aac",
     wav: "audio/wav",
     pdf: "application/pdf",
+    txt: "text/plain",
+    csv: "text/csv",
+    rtf: "application/rtf",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ppt: "application/vnd.ms-powerpoint",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    odt: "application/vnd.oasis.opendocument.text",
+    ods: "application/vnd.oasis.opendocument.spreadsheet",
+    odp: "application/vnd.oasis.opendocument.presentation",
+    vcf: "text/vcard",
   };
   return (extension && known[extension]) || "application/octet-stream";
+}
+
+function declaredUncompressedSize(entry: JSZip.JSZipObject): number | null {
+  const internalData = (entry as JSZip.JSZipObject & {
+    _data?: { uncompressedSize?: unknown };
+  })._data;
+  return typeof internalData?.uncompressedSize === "number"
+    ? internalData.uncompressedSize
+    : null;
 }
 
 function formatCompact(value: number) {
@@ -205,11 +235,17 @@ export default function ChatViewer() {
       setError("Escolha um arquivo .zip exportado pelo WhatsApp.");
       return;
     }
+    const selectionError = archiveSelectionError(files);
+    if (selectionError) {
+      setError(selectionError);
+      return;
+    }
 
     setError("");
     setImporting(true);
     recordMetric("import-started");
     const imported: Conversation[] = [];
+    const createdObjectUrls: string[] = [];
 
     try {
       for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
@@ -224,6 +260,11 @@ export default function ChatViewer() {
           createFolders: false,
         });
         const entries = Object.values(zip.files).filter((entry) => !entry.dir);
+        if (entries.length > ZIP_LIMITS.maxEntries) {
+          throw new Error(
+            `${file.name}: o ZIP contém mais de ${ZIP_LIMITS.maxEntries.toLocaleString("pt-BR")} arquivos.`,
+          );
+        }
         const chatEntry = entries.find((entry) => /(^|\/)_chat\.txt$/i.test(entry.name))
           ?? entries.find((entry) => /(^|\/).*(chat|conversa).*\.txt$/i.test(entry.name));
 
@@ -231,26 +272,68 @@ export default function ChatViewer() {
           throw new Error(`${file.name}: não encontrei o arquivo _chat.txt dentro do ZIP.`);
         }
 
+        const mediaEntries = entries.filter((entry) => entry.name !== chatEntry.name);
+        const processableMediaEntries = mediaEntries.filter((entry) => (
+          attachmentAccess(entry.name) !== "blocked"
+        ));
+        const structureError = zipStructureError(
+          file.name,
+          [chatEntry, ...processableMediaEntries].map(declaredUncompressedSize),
+          declaredUncompressedSize(chatEntry),
+        );
+        if (structureError) throw new Error(structureError);
+
         setProgress(baseProgress + step * 0.3);
         setProgressText("Lendo as mensagens localmente…");
         const chatText = await chatEntry.async("string");
+        const chatBytes = new Blob([chatText]).size;
+        if (chatBytes > ZIP_LIMITS.maxChatBytes) {
+          throw new Error(
+            `${file.name}: o arquivo de mensagens excede ${formatFileSize(ZIP_LIMITS.maxChatBytes)}.`,
+          );
+        }
 
-        const mediaEntries = entries.filter((entry) => entry.name !== chatEntry.name);
         const mediaMap = new Map<string, ChatAttachment>();
         const objectUrls: string[] = [];
+        let extractedBytes = chatBytes;
 
         setProgressText(`Preparando ${mediaEntries.length} arquivo(s) de mídia…`);
         for (let index = 0; index < mediaEntries.length; index += 1) {
           const entry = mediaEntries[index];
           const filename = entry.name.split("/").pop() || entry.name;
+          const access = attachmentAccess(filename);
+          if (access === "blocked") {
+            mediaMap.set(filename.toLocaleLowerCase("pt-BR"), {
+              filename,
+              kind: "document",
+              url: null,
+              blocked: true,
+              blockReason: blockedAttachmentReason(filename),
+            });
+            continue;
+          }
+
           const content = await entry.async("blob");
+          if (content.size > ZIP_LIMITS.maxEntryBytes) {
+            throw new Error(
+              `${file.name}: ${filename} excede ${formatFileSize(ZIP_LIMITS.maxEntryBytes)}.`,
+            );
+          }
+          extractedBytes += content.size;
+          if (extractedBytes > ZIP_LIMITS.maxTotalUncompressedBytes) {
+            throw new Error(
+              `${file.name}: o conteúdo descompactado excede ${formatFileSize(ZIP_LIMITS.maxTotalUncompressedBytes)}.`,
+            );
+          }
           const typedBlob = new Blob([content], { type: fileMime(filename) });
           const url = URL.createObjectURL(typedBlob);
           objectUrls.push(url);
+          createdObjectUrls.push(url);
           mediaMap.set(filename.toLocaleLowerCase("pt-BR"), {
             filename,
             kind: mediaKind(filename),
             url,
+            blocked: false,
           });
           if (index % 20 === 0) {
             setProgress(baseProgress + step * (0.35 + (index / Math.max(mediaEntries.length, 1)) * 0.45));
@@ -287,7 +370,7 @@ export default function ChatViewer() {
       recordMetric("import-succeeded");
       setTimeout(() => setImporting(false), 450);
     } catch (caught) {
-      imported.forEach((conversation) => conversation.objectUrls.forEach((url) => URL.revokeObjectURL(url)));
+      createdObjectUrls.forEach((url) => URL.revokeObjectURL(url));
       setImporting(false);
       recordMetric("import-failed");
       setError(caught instanceof Error ? caught.message : "Não foi possível abrir o arquivo.");
@@ -490,6 +573,7 @@ export default function ChatViewer() {
             {[
               ["Minhas conversas são enviadas para algum servidor?", "Não. A leitura e a organização acontecem no próprio navegador. O ZIP e as mensagens permanecem no seu computador."],
               ["O site guarda uma cópia depois?", "Não. Não há cadastro nem banco de dados de conversas. Ao fechar a aba ou limpar a sessão, o conteúdo sai da memória do navegador."],
+              ["O site abre qualquer anexo?", "Não. Fotos, vídeos, áudios e documentos comuns podem ser consultados localmente. Executáveis, scripts, páginas, arquivos compactados e formatos desconhecidos são bloqueados por segurança."],
               ["O que o site mede?", "Nosso contador guarda apenas totais diários de visitas e de aberturas iniciadas, concluídas ou com erro, sem IP ou navegador. A Cloudflare mede visualizações e desempenho sem coletar dados pessoais. Nenhuma dessas métricas recebe o ZIP, nome de arquivo, conteúdo ou metadados da conversa."],
               ["Por que o serviço é gratuito?", "Espaços pequenos e discretos de publicidade ajudam a manter o site gratuito sem interferir na leitura da conversa."],
             ].map(([question, answer], index) => (
@@ -671,8 +755,20 @@ function highlightText(text: string, query: string) {
 }
 
 function AttachmentView({ attachment }: { attachment: ChatAttachment }) {
+  if (attachment.blocked || !attachment.url) {
+    return (
+      <div className="documentCard blockedDocument" aria-label={`${attachment.filename}: arquivo bloqueado`}>
+        <span><LockKeyhole aria-hidden="true" /></span>
+        <p>
+          <strong>{attachment.filename}</strong>
+          <small>{attachment.blockReason ?? "Arquivo bloqueado por segurança"}</small>
+        </p>
+        <ShieldCheck aria-hidden="true" />
+      </div>
+    );
+  }
   if (attachment.kind === "image") return <a className="mediaCard" href={attachment.url} target="_blank" rel="noreferrer"><img src={attachment.url} alt={`Imagem ${attachment.filename}`} loading="lazy" /></a>;
   if (attachment.kind === "video") return <video className="mediaCard" src={attachment.url} controls preload="metadata" playsInline />;
   if (attachment.kind === "audio") return <div className="audioCard"><span>Áudio</span><audio src={attachment.url} controls preload="metadata" /></div>;
-  return <a className="documentCard" href={attachment.url} download={attachment.filename}><span><FileText aria-hidden="true" /></span><p><strong>{attachment.filename}</strong><small>{attachment.filename.split(".").pop()?.toUpperCase().slice(0, 4) || "DOC"} · clique para salvar</small></p><Download aria-hidden="true" /></a>;
+  return <a className="documentCard" href={attachment.url} target="_blank" rel="noreferrer"><span><FileText aria-hidden="true" /></span><p><strong>{attachment.filename}</strong><small>{attachment.filename.split(".").pop()?.toUpperCase().slice(0, 4) || "DOC"} · abrir arquivo local</small></p><ExternalLink aria-hidden="true" /></a>;
 }

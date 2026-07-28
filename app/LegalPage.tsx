@@ -42,7 +42,7 @@ export default function LegalPage({ eyebrow, title, intro, children }: LegalPage
           <span className="eyebrow">{eyebrow}</span>
           <h1>{title}</h1>
           <p>{intro}</p>
-          <small>Última atualização: 27 de julho de 2026</small>
+          <small>Última atualização: 28 de julho de 2026</small>
         </header>
         <div className="legalArticle">{children}</div>
       </article>
