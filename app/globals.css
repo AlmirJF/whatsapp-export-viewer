@@ -328,6 +328,10 @@ a { color: inherit; }
 .documentCard small { color: var(--muted); font-size: 8px; margin-top: 3px; }
 .documentCard > span svg { width: 20px; height: 20px; }
 .documentCard > svg { width: 18px; height: 18px; color: var(--green); flex: 0 0 auto; }
+.blockedDocument { border: 1px solid color-mix(in srgb, var(--red) 30%, var(--line)); cursor: not-allowed; }
+.blockedDocument > span { background: color-mix(in srgb, var(--red) 82%, #5b1b1b); }
+.blockedDocument > svg { color: var(--red); }
+.blockedDocument small { color: var(--red); }
 .emptyResults { min-height: 360px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--muted); text-align: center; }
 .emptyResults > svg { width: 34px; height: 34px; color: var(--green); stroke-width: 1.6; }
 .emptyResults h3 { margin: 8px 0 3px; color: var(--ink); font-family: var(--font-display); }
