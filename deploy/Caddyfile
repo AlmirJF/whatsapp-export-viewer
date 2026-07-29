@@ -1,6 +1,14 @@
 {$SITE_ADDRESS:http://localhost} {
 	encode zstd gzip
 
+	log {
+		output stdout
+		format json
+	}
+
+	@notSitemaps not path /sitemap.xml /sitemap-pages.xml
+	log_skip @notSitemaps
+
 	header {
 		-Server
 		X-Content-Type-Options "nosniff"
