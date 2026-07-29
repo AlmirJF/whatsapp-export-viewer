@@ -3,7 +3,14 @@
 
 	log {
 		output stdout
-		format json
+		format filter {
+			request>remote_ip delete
+			request>remote_port delete
+			request>client_ip delete
+			request>headers>X-Forwarded-For delete
+			request>headers>Cf-Connecting-Ip delete
+			wrap json
+		}
 	}
 
 	@notSitemaps not path /sitemap.xml /sitemap-pages.xml
