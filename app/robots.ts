@@ -32,6 +32,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/__metrics/", "/__contact"],
       },
     ],
-    sitemap: "https://whatsapp-viewer.runcode.qzz.io/sitemap.xml",
+    sitemap: "https://whatsapp-viewer.runcode.qzz.io/sitemap-pages.xml",
   };
 }
