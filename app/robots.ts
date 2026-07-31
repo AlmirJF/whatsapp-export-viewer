@@ -13,7 +13,7 @@ export default function robots(): MetadataRoute.Robots {
       ...publicSearchAgents.map((userAgent) => ({
         userAgent,
         allow: "/",
-        disallow: ["/__metrics/", "/__contact"],
+        disallow: ["/__metrics/", "/__contact", "/_local-media/", "/local-media-sw.js"],
       })),
       {
         userAgent: "GPTBot",
@@ -26,7 +26,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/__metrics/", "/__contact"],
+        disallow: ["/__metrics/", "/__contact", "/_local-media/", "/local-media-sw.js"],
       },
     ],
     sitemap: "https://whatsapp-viewer.runcode.qzz.io/sitemap-pages.xml",

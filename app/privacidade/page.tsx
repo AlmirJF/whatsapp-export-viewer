@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     >
       <aside className="legalNotice">
         <strong>Resumo essencial</strong>
-        <p>O arquivo ZIP, as mensagens, os nomes, as mídias e os documentos são lidos apenas no seu dispositivo. Não fazemos upload nem mantemos uma cópia da conversa. Somente informações que você escrever voluntariamente no formulário de contato são enviadas ao servidor.</p>
+        <p>O arquivo ZIP, as mensagens, os nomes, as mídias e os documentos são lidos apenas no seu dispositivo. Não fazemos upload nem mantemos uma cópia da conversa em nossos servidores. Somente informações que você escrever voluntariamente no formulário de contato são enviadas ao servidor.</p>
       </aside>
 
       <section>
@@ -27,12 +27,14 @@ export default function PrivacyPage() {
 
       <section>
         <h2>2. Como sua conversa é processada</h2>
-        <p>Quando você escolhe um ZIP, o navegador lê o arquivo e organiza mensagens e anexos na memória da própria aba. Essa operação acontece por código executado no seu dispositivo.</p>
+        <p>Quando você escolhe um ZIP, o navegador lê o arquivo e organiza mensagens e anexos em seu armazenamento privado. Essa operação acontece por código executado no seu dispositivo.</p>
         <ul>
           <li>O ZIP não é enviado ao servidor do site.</li>
           <li>Mensagens, participantes, nomes de arquivos e anexos não entram nas métricas.</li>
-          <li>Não existe banco de dados de conversas nem cadastro de usuário.</li>
-          <li>Ao remover uma conversa ou fechar a aba, os dados temporários deixam a memória da sessão. O arquivo original no seu computador não é alterado.</li>
+          <li>Não existe banco de dados de conversas no servidor nem cadastro de usuário.</li>
+          <li>Mensagens e metadados ficam no IndexedDB; anexos permitidos ficam no Cache Storage do navegador.</li>
+          <li>Fotos, vídeos e áudios são exibidos por um Service Worker que responde diretamente do armazenamento local. A solicitação não chega ao servidor.</li>
+          <li>Ao remover uma conversa ou usar “Apagar dados locais”, o aplicativo exclui a cópia armazenada no navegador. O arquivo original no seu computador não é alterado.</li>
         </ul>
       </section>
 
@@ -45,7 +47,8 @@ export default function PrivacyPage() {
 
       <section>
         <h2>4. Cookies e armazenamento no navegador</h2>
-        <p>Atualmente, não usamos cookies de publicidade e não exigimos login. O site usa um marcador temporário no <code>sessionStorage</code> para contar a visita apenas uma vez por sessão. As conversas abertas permanecem somente na memória da aba e não são gravadas pelo aplicativo em armazenamento persistente do navegador.</p>
+        <p>Atualmente, não usamos cookies de publicidade e não exigimos login. O site usa um marcador temporário no <code>sessionStorage</code> para contar a visita apenas uma vez por sessão.</p>
+        <p>Conversas e anexos permitidos são gravados no armazenamento privado deste navegador para que continuem disponíveis após fechar ou recarregar a página. O aplicativo pode solicitar ao navegador que preserve esse armazenamento, mas o próprio navegador ainda pode removê-lo por falta de espaço, limpeza manual, navegação privada ou políticas do dispositivo.</p>
       </section>
 
       <section>
@@ -68,14 +71,16 @@ export default function PrivacyPage() {
 
       <section>
         <h2>8. Seus direitos e escolhas</h2>
-        <p>Você pode impedir a leitura de uma conversa simplesmente não selecionando o arquivo, remover a conversa pela interface ou fechar a aba. Como o servidor não recebe o conteúdo, não temos uma cópia para localizar, exportar ou apagar.</p>
+        <p>Você pode impedir a leitura de uma conversa simplesmente não selecionando o arquivo. Depois da importação, use “Apagar conversa local” ou “Apagar dados locais” para excluir mensagens e anexos armazenados neste navegador. Limpar os dados do site pelas configurações do navegador produz o mesmo efeito.</p>
+        <p>Como o servidor não recebe o conteúdo, não temos uma cópia remota para localizar, exportar ou apagar em seu nome.</p>
         <p>Para consultar, corrigir ou solicitar a exclusão dos dados enviados pelo formulário, use a nossa <a href="/contato">página de contato</a> e informe o número do protocolo. Analisaremos pedidos relacionados aos seus direitos conforme a legislação aplicável.</p>
       </section>
 
       <section>
         <h2>9. Segurança e alterações</h2>
         <p>Adotamos HTTPS, cabeçalhos de segurança, isolamento dos serviços e dependências mantidas para reduzir riscos. O visualizador também limita a quantidade e o tamanho do conteúdo descompactado e não abre anexos executáveis, scripts, páginas, arquivos compactados ou formatos desconhecidos.</p>
-        <p>Documentos permitidos são abertos a partir de uma referência temporária criada pelo próprio navegador. O site não hospeda esses arquivos nem oferece arquivos externos para download. Nenhum sistema é infalível; por isso, evite usar computadores compartilhados e mantenha seu navegador atualizado.</p>
+        <p>Fotos, vídeos e áudios permitidos são servidos somente pelo Service Worker a partir do Cache Storage local. Documentos ficam armazenados e identificados, mas não são abertos nem oferecidos para download pelo site. Endereços locais de mídia retornam erro quando acessados diretamente no servidor.</p>
+        <p>Nenhum sistema é infalível. Evite computadores compartilhados, apague os dados locais depois do uso e mantenha o navegador atualizado.</p>
         <p>Podemos atualizar esta política quando o funcionamento do site, os fornecedores ou a legislação mudarem. A data no início da página indica a versão vigente.</p>
       </section>
     </LegalPage>

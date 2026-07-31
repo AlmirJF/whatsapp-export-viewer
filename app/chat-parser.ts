@@ -3,7 +3,9 @@ export type MediaKind = "image" | "video" | "audio" | "document";
 export interface ChatAttachment {
   filename: string;
   kind: MediaKind;
-  url: string | null;
+  localPath: string | null;
+  size: number;
+  mimeType: string | null;
   blocked: boolean;
   blockReason?: string;
 }

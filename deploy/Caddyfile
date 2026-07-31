@@ -23,11 +23,22 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 		Strict-Transport-Security "max-age=31536000"
-		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob: data:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com"
 	}
 
 	request_body {
 		max_size 1MB
+	}
+
+	@localMedia path /_local-media/*
+
+	handle @localMedia {
+		header {
+			Cache-Control "no-store"
+			X-Content-Type-Options "nosniff"
+			X-Robots-Tag "noindex, nofollow, noarchive"
+		}
+		respond "Arquivo local indisponível" 404
 	}
 
 	@metrics {

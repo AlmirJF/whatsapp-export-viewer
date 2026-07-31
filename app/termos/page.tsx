@@ -21,7 +21,7 @@ export default function TermsPage() {
 
       <section>
         <h2>2. Processamento local</h2>
-        <p>A leitura do ZIP e a exibição das mensagens acontecem no navegador do usuário. O aplicativo não envia a conversa ao nosso servidor nem mantém cópias. Consulte os detalhes na <a href="/privacidade">Política de Privacidade</a>.</p>
+        <p>A leitura do ZIP e a exibição das mensagens acontecem no navegador do usuário. O aplicativo não envia a conversa ao nosso servidor. Conversas e anexos permitidos permanecem no armazenamento privado do navegador até serem apagados pelo usuário ou pelo próprio navegador. Consulte os detalhes na <a href="/privacidade">Política de Privacidade</a>.</p>
       </section>
 
       <section>

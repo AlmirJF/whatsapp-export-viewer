@@ -7,7 +7,9 @@ familiar, sem exigir instalação ou cadastro.
 > WhatsApp Export Chat Viewer para arquivos ZIP, com processamento 100% local.
 
 O arquivo ZIP é aberto e processado localmente pelo navegador. As conversas e
-mídias não são enviadas para um servidor externo.
+mídias não são enviadas para um servidor externo. Mensagens são persistidas no
+IndexedDB e anexos permitidos no Cache Storage do próprio navegador. Um Service
+Worker entrega fotos, vídeos e áudios diretamente desse armazenamento local.
 
 ## Executar localmente
 
@@ -34,6 +36,10 @@ para criar e operar a instalação na VPS.
 
 - Todo o processamento das conversas acontece no dispositivo do usuário.
 - O projeto não possui endpoint para receber arquivos de conversa.
+- A rota reservada para mídia local responde `404` no servidor e somente pode
+  ser atendida pelo Service Worker quando o arquivo existe no navegador.
+- O aplicativo não cria URLs `blob:`, não oferece anexos para download e não
+  abre documentos importados.
 - Somente os dados digitados voluntariamente no formulário de contato são
   enviados e armazenados no serviço interno, com retenção máxima de 12 meses.
 - Exportações `.zip`, `_chat.txt` e diretórios de teste são ignorados pelo Git.

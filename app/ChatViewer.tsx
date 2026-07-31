@@ -7,7 +7,6 @@ import {
   BarChart3,
   Check,
   ChevronDown,
-  ExternalLink,
   FileArchive,
   FileText,
   FolderOpen,
@@ -42,6 +41,14 @@ import {
   zipStructureError,
 } from "./file-safety";
 import {
+  type StoredConversation,
+  cacheLocalMedia,
+  clearAllStoredConversations,
+  deleteStoredConversation,
+  initializeLocalStorage,
+  saveStoredConversation,
+} from "./local-media-storage";
+import {
   type ChangeEvent,
   type DragEvent,
   useCallback,
@@ -51,17 +58,7 @@ import {
   useState,
 } from "react";
 
-interface Conversation {
-  id: string;
-  name: string;
-  fileName: string;
-  messages: ChatMessage[];
-  participants: string[];
-  firstDate: string;
-  lastDate: string;
-  selfSender: string;
-  objectUrls: string[];
-}
+type Conversation = StoredConversation;
 
 type MobileView = "chats" | "messages" | "details";
 type MediaFilter = "all" | "text" | "image" | "video" | "audio" | "document";
@@ -192,19 +189,15 @@ export default function ChatViewer() {
   const [mobileView, setMobileView] = useState<MobileView>("messages");
   const [darkMode, setDarkMode] = useState(false);
   const [showFaq, setShowFaq] = useState<number | null>(0);
+  const [localStorageReady, setLocalStorageReady] = useState(false);
+  const [localStorageLoading, setLocalStorageLoading] = useState(true);
   const fileInput = useRef<HTMLInputElement>(null);
   const messagesEnd = useRef<HTMLDivElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
-  const conversationsRef = useRef<Conversation[]>([]);
-
   const activeConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === activeId) ?? null,
     [activeId, conversations],
   );
-
-  useEffect(() => {
-    conversationsRef.current = conversations;
-  }, [conversations]);
 
   useEffect(() => {
     if (error) errorRef.current?.focus();
@@ -222,14 +215,38 @@ export default function ChatViewer() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      conversationsRef.current.forEach((conversation) => {
-        conversation.objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    let cancelled = false;
+    void initializeLocalStorage()
+      .then((storedConversations) => {
+        if (cancelled) return;
+        setConversations(storedConversations);
+        setActiveId(storedConversations[0]?.id ?? null);
+        setLocalStorageReady(true);
+        setLocalStorageLoading(false);
+      })
+      .catch((caught) => {
+        if (cancelled) return;
+        setLocalStorageLoading(false);
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Não foi possível preparar o armazenamento local deste navegador.",
+        );
       });
+    return () => {
+      cancelled = true;
     };
   }, []);
 
   const importFiles = useCallback(async (fileList: FileList | File[]) => {
+    if (!localStorageReady) {
+      setError(
+        localStorageLoading
+          ? "Aguarde enquanto o armazenamento local é preparado."
+          : "O armazenamento local seguro não está disponível neste navegador.",
+      );
+      return;
+    }
     const files = Array.from(fileList).filter((file) => file.name.toLowerCase().endsWith(".zip"));
     if (!files.length) {
       setError("Escolha um arquivo .zip exportado pelo WhatsApp.");
@@ -245,11 +262,13 @@ export default function ChatViewer() {
     setImporting(true);
     recordMetric("import-started");
     const imported: Conversation[] = [];
-    const createdObjectUrls: string[] = [];
+    const createdConversationIds: string[] = [];
 
     try {
       for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
         const file = files[fileIndex];
+        const conversationId = crypto.randomUUID();
+        createdConversationIds.push(conversationId);
         const baseProgress = (fileIndex / files.length) * 100;
         const step = 100 / files.length;
         setProgress(baseProgress + step * 0.08);
@@ -294,7 +313,6 @@ export default function ChatViewer() {
         }
 
         const mediaMap = new Map<string, ChatAttachment>();
-        const objectUrls: string[] = [];
         let extractedBytes = chatBytes;
 
         setProgressText(`Preparando ${mediaEntries.length} arquivo(s) de mídia…`);
@@ -306,7 +324,9 @@ export default function ChatViewer() {
             mediaMap.set(filename.toLocaleLowerCase("pt-BR"), {
               filename,
               kind: "document",
-              url: null,
+              localPath: null,
+              size: declaredUncompressedSize(entry) ?? 0,
+              mimeType: null,
               blocked: true,
               blockReason: blockedAttachmentReason(filename),
             });
@@ -326,13 +346,19 @@ export default function ChatViewer() {
             );
           }
           const typedBlob = new Blob([content], { type: fileMime(filename) });
-          const url = URL.createObjectURL(typedBlob);
-          objectUrls.push(url);
-          createdObjectUrls.push(url);
+          const mimeType = fileMime(filename);
+          const localPath = await cacheLocalMedia(
+            conversationId,
+            filename,
+            typedBlob,
+            mimeType,
+          );
           mediaMap.set(filename.toLocaleLowerCase("pt-BR"), {
             filename,
             kind: mediaKind(filename),
-            url,
+            localPath,
+            size: typedBlob.size,
+            mimeType,
             blocked: false,
           });
           if (index % 20 === 0) {
@@ -342,15 +368,14 @@ export default function ChatViewer() {
         }
 
         setProgress(baseProgress + step * 0.86);
-        setProgressText("Organizando a conversa na memória do navegador…");
+        setProgressText("Salvando a conversa no armazenamento privado do navegador…");
         const parsed = parseWhatsAppChat(chatText, mediaMap);
         if (!parsed.messages.length) {
-          objectUrls.forEach((url) => URL.revokeObjectURL(url));
           throw new Error(`${file.name}: o arquivo foi aberto, mas nenhuma mensagem reconhecível foi encontrada.`);
         }
 
-        imported.push({
-          id: `${Date.now()}-${fileIndex}-${Math.random().toString(36).slice(2)}`,
+        const conversation: Conversation = {
+          id: conversationId,
           name: conversationName(file.name),
           fileName: file.name,
           messages: parsed.messages,
@@ -358,8 +383,9 @@ export default function ChatViewer() {
           firstDate: parsed.firstDate,
           lastDate: parsed.lastDate,
           selfSender: parsed.participants.at(-1) ?? "",
-          objectUrls,
-        });
+        };
+        await saveStoredConversation(conversation);
+        imported.push(conversation);
       }
 
       setProgress(100);
@@ -370,12 +396,16 @@ export default function ChatViewer() {
       recordMetric("import-succeeded");
       setTimeout(() => setImporting(false), 450);
     } catch (caught) {
-      createdObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+      await Promise.all(
+        createdConversationIds.map((conversationId) => (
+          deleteStoredConversation(conversationId).catch(() => undefined)
+        )),
+      );
       setImporting(false);
       recordMetric("import-failed");
       setError(caught instanceof Error ? caught.message : "Não foi possível abrir o arquivo.");
     }
-  }, []);
+  }, [localStorageLoading, localStorageReady]);
 
   function handleInput(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files) void importFiles(event.target.files);
@@ -400,24 +430,33 @@ export default function ChatViewer() {
 
   function updateSelfSender(sender: string) {
     if (!activeConversation) return;
+    const updatedConversation = { ...activeConversation, selfSender: sender };
     setConversations((current) => current.map((conversation) => (
-      conversation.id === activeConversation.id ? { ...conversation, selfSender: sender } : conversation
+      conversation.id === activeConversation.id ? updatedConversation : conversation
     )));
+    void saveStoredConversation(updatedConversation).catch(() => {
+      setError("A preferência foi aplicada, mas não pôde ser salva neste navegador.");
+    });
   }
 
   function removeConversation(id: string) {
-    const target = conversations.find((conversation) => conversation.id === id);
-    target?.objectUrls.forEach((url) => URL.revokeObjectURL(url));
     const remaining = conversations.filter((conversation) => conversation.id !== id);
     setConversations(remaining);
     if (activeId === id) setActiveId(remaining[0]?.id ?? null);
+    void deleteStoredConversation(id).catch(() => {
+      setError("A conversa saiu da tela, mas alguns dados locais podem não ter sido apagados.");
+    });
   }
 
-  function clearSession() {
-    if (!window.confirm("Remover todas as conversas desta aba? Os arquivos originais no seu computador não serão alterados.")) return;
-    conversations.forEach((conversation) => conversation.objectUrls.forEach((url) => URL.revokeObjectURL(url)));
-    setConversations([]);
-    setActiveId(null);
+  async function clearSession() {
+    if (!window.confirm("Apagar todas as conversas e anexos armazenados neste navegador? Os arquivos originais no seu computador não serão alterados.")) return;
+    try {
+      await clearAllStoredConversations();
+      setConversations([]);
+      setActiveId(null);
+    } catch {
+      setError("Não foi possível apagar todos os dados locais. Tente novamente.");
+    }
   }
 
   const filteredMessages = useMemo(() => {
@@ -468,16 +507,16 @@ export default function ChatViewer() {
               <ShieldCheck aria-hidden="true" className="privacyShieldIcon" />
               <p>
                 <strong>Nenhum arquivo é enviado para nós.</strong>
-                Tudo é aberto e processado somente na memória do seu navegador, no seu próprio computador.
+                Tudo é processado e armazenado somente neste navegador, no seu próprio computador.
                 <span className="privacyMetricsNote">
                   Métricas técnicas medem visitas, desempenho e resultado da abertura. ZIP, nome de arquivo e conteúdo nunca fazem parte delas.
                 </span>
               </p>
             </div>
             <div className="heroActions">
-              <button className="primaryButton" onClick={() => fileInput.current?.click()}>
+              <button className="primaryButton" onClick={() => fileInput.current?.click()} disabled={!localStorageReady}>
                 <FolderOpen aria-hidden="true" />
-                Abrir minha conversa
+                {localStorageLoading ? "Preparando armazenamento…" : "Abrir minha conversa"}
               </button>
               <a className="textLink" href="#como-funciona">Ver como funciona <ArrowRight aria-hidden="true" /></a>
             </div>
@@ -506,7 +545,7 @@ export default function ChatViewer() {
                 <span className="uploadGlyph" aria-hidden="true"><Upload /></span>
                 <strong id="zipDropTitle">Arraste seus arquivos ZIP aqui</strong>
                 <span>ou escolha diretamente no computador</span>
-                <button className="chooseZipButton" onClick={() => fileInput.current?.click()} type="button">
+                <button className="chooseZipButton" onClick={() => fileInput.current?.click()} type="button" disabled={!localStorageReady}>
                   <FileArchive aria-hidden="true" />
                   Selecionar ZIP
                 </button>
@@ -522,6 +561,7 @@ export default function ChatViewer() {
                 accept=".zip,application/zip"
                 multiple
                 hidden
+                disabled={!localStorageReady}
                 onChange={handleInput}
                 aria-describedby="zipDropHint"
               />
@@ -549,7 +589,7 @@ export default function ChatViewer() {
         <section className="trustBar" id="privacidade" aria-label="Compromissos de privacidade">
           <div><span className="trustNumber">01</span><p><strong>Processamento local</strong><small>O ZIP é lido pelo seu navegador</small></p></div>
           <div><span className="trustNumber">02</span><p><strong>Zero armazenamento</strong><small>Não criamos cópias em servidores</small></p></div>
-          <div><span className="trustNumber">03</span><p><strong>Sessão temporária</strong><small>Fechou a aba, os dados desaparecem</small></p></div>
+          <div><span className="trustNumber">03</span><p><strong>Armazenamento local</strong><small>Você decide quando apagar os dados</small></p></div>
           <div><span className="trustNumber">04</span><p><strong>Métricas sem conversas</strong><small>Somente sinais técnicos e agregados</small></p></div>
         </section>
 
@@ -563,7 +603,7 @@ export default function ChatViewer() {
           <div className="stepsGrid">
             <article><span>1</span><h3>Exporte</h3><p>No WhatsApp, escolha exportar a conversa e salve o arquivo ZIP no seu aparelho.</p></article>
             <article><span>2</span><h3>Abra localmente</h3><p>Selecione o ZIP aqui. O navegador lê as mensagens sem enviá-las para a internet.</p></article>
-            <article><span>3</span><h3>Explore</h3><p>Pesquise textos, filtre participantes e consulte fotos, áudios e documentos.</p></article>
+            <article><span>3</span><h3>Explore</h3><p>Pesquise textos, filtre participantes e consulte fotos, vídeos e áudios diretamente do armazenamento local.</p></article>
           </div>
         </section>
 
@@ -572,8 +612,8 @@ export default function ChatViewer() {
           <div className="faqList">
             {[
               ["Minhas conversas são enviadas para algum servidor?", "Não. A leitura e a organização acontecem no próprio navegador. O ZIP e as mensagens permanecem no seu computador."],
-              ["O site guarda uma cópia depois?", "Não. Não há cadastro nem banco de dados de conversas. Ao fechar a aba ou limpar a sessão, o conteúdo sai da memória do navegador."],
-              ["O site abre qualquer anexo?", "Não. Fotos, vídeos, áudios e documentos comuns podem ser consultados localmente. Executáveis, scripts, páginas, arquivos compactados e formatos desconhecidos são bloqueados por segurança."],
+              ["O site guarda uma cópia depois?", "Somente neste navegador. Não há cadastro nem banco de dados de conversas no servidor. Você pode apagar conversas e anexos locais pela própria interface."],
+              ["O site abre qualquer anexo?", "Não. Fotos, vídeos e áudios compatíveis são exibidos a partir do armazenamento privado do navegador. Documentos ficam identificados, mas não são abertos pelo site. Executáveis, scripts, páginas, arquivos compactados e formatos desconhecidos são bloqueados."],
               ["O que o site mede?", "Nosso contador guarda apenas totais diários de visitas e de aberturas iniciadas, concluídas ou com erro, sem IP ou navegador. A Cloudflare mede visualizações e desempenho sem coletar dados pessoais. Nenhuma dessas métricas recebe o ZIP, nome de arquivo, conteúdo ou metadados da conversa."],
               ["Por que o serviço é gratuito?", "Espaços pequenos e discretos de publicidade ajudam a manter o site gratuito sem interferir na leitura da conversa."],
             ].map(([question, answer], index) => (
@@ -615,16 +655,17 @@ export default function ChatViewer() {
             {darkMode ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
             {darkMode ? "Claro" : "Escuro"}
           </button>
-          <button className="quietButton dangerText" onClick={clearSession}><Trash2 aria-hidden="true" />Limpar sessão</button>
-          <button className="primaryButton small" onClick={() => fileInput.current?.click()}><Plus aria-hidden="true" />Adicionar ZIP</button>
-          <input ref={fileInput} type="file" accept=".zip,application/zip" multiple hidden onChange={handleInput} />
+          <button className="quietButton dangerText" onClick={() => void clearSession()}><Trash2 aria-hidden="true" />Apagar dados locais</button>
+          <button className="primaryButton small" onClick={() => fileInput.current?.click()} disabled={!localStorageReady}><Plus aria-hidden="true" />Adicionar ZIP</button>
+          <input ref={fileInput} type="file" accept=".zip,application/zip" multiple hidden disabled={!localStorageReady} onChange={handleInput} />
         </div>
       </header>
 
       <div className="localNotice" role="status">
         <ShieldCheck aria-hidden="true" />
-        <strong>Privacidade ativa:</strong> estas conversas estão somente na memória deste navegador. Nada foi importado para um servidor externo.
+        <strong>Privacidade ativa:</strong> estas conversas e seus anexos estão armazenados somente neste navegador. Nada foi importado para um servidor externo.
       </div>
+      {error && <p className="viewerError errorMessage" role="alert" tabIndex={-1} ref={errorRef}>{error}</p>}
 
       {importing && (
         <div className="importOverlay" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
@@ -664,7 +705,7 @@ export default function ChatViewer() {
           </div>
           <div className="panelPrivacy">
             <LockKeyhole aria-hidden="true" className="uiIcon" />
-            <p><strong>Somente neste dispositivo</strong><small>Fechar a aba apaga esta sessão.</small></p>
+            <p><strong>Somente neste dispositivo</strong><small>Use “Apagar dados locais” quando quiser.</small></p>
           </div>
         </aside>
 
@@ -709,7 +750,7 @@ export default function ChatViewer() {
               <div className="detailsBlock"><label className="detailLabel" htmlFor="selfSender">QUEM É VOCÊ NESTA CONVERSA?</label><select id="selfSender" value={activeConversation.selfSender} onChange={(event) => updateSelfSender(event.target.value)}>{activeConversation.participants.map((participant) => <option key={participant}>{participant}</option>)}</select><small className="helperText">Usamos isso apenas para alinhar suas mensagens à direita.</small></div>
               <div className="detailsBlock"><span className="detailLabel">PARTICIPANTES</span><div className="participantList">{activeConversation.participants.map((participant) => <div key={participant}><span className="avatar mini">{initials(participant)}</span><strong>{participant}</strong><small>{formatCompact(activeConversation.messages.filter((message) => message.sender === participant).length)}</small></div>)}</div></div>
               <AdSlot />
-              <button className="removeButton" onClick={() => removeConversation(activeConversation.id)}><Trash2 aria-hidden="true" />Remover desta sessão</button>
+              <button className="removeButton" onClick={() => removeConversation(activeConversation.id)}><Trash2 aria-hidden="true" />Apagar conversa local</button>
               <p className="detailsPrivacy"><LockKeyhole aria-hidden="true" /><span><strong>Nada armazenado externamente</strong><small>Todos os dados permanecem neste navegador e neste computador.</small></span></p>
             </>
           )}
@@ -755,7 +796,7 @@ function highlightText(text: string, query: string) {
 }
 
 function AttachmentView({ attachment }: { attachment: ChatAttachment }) {
-  if (attachment.blocked || !attachment.url) {
+  if (attachment.blocked || !attachment.localPath) {
     return (
       <div className="documentCard blockedDocument" aria-label={`${attachment.filename}: arquivo bloqueado`}>
         <span><LockKeyhole aria-hidden="true" /></span>
@@ -767,8 +808,17 @@ function AttachmentView({ attachment }: { attachment: ChatAttachment }) {
       </div>
     );
   }
-  if (attachment.kind === "image") return <a className="mediaCard" href={attachment.url} target="_blank" rel="noreferrer"><img src={attachment.url} alt={`Imagem ${attachment.filename}`} loading="lazy" /></a>;
-  if (attachment.kind === "video") return <video className="mediaCard" src={attachment.url} controls preload="metadata" playsInline />;
-  if (attachment.kind === "audio") return <div className="audioCard"><span>Áudio</span><audio src={attachment.url} controls preload="metadata" /></div>;
-  return <a className="documentCard" href={attachment.url} target="_blank" rel="noreferrer"><span><FileText aria-hidden="true" /></span><p><strong>{attachment.filename}</strong><small>{attachment.filename.split(".").pop()?.toUpperCase().slice(0, 4) || "DOC"} · abrir arquivo local</small></p><ExternalLink aria-hidden="true" /></a>;
+  if (attachment.kind === "image") return <div className="mediaCard"><img src={attachment.localPath} alt={`Imagem ${attachment.filename}`} loading="lazy" /></div>;
+  if (attachment.kind === "video") return <video className="mediaCard" src={attachment.localPath} controls preload="metadata" playsInline />;
+  if (attachment.kind === "audio") return <div className="audioCard"><span>Áudio</span><audio src={attachment.localPath} controls preload="metadata" /></div>;
+  return (
+    <div className="documentCard storedDocument" aria-label={`${attachment.filename}: armazenado somente neste navegador`}>
+      <span><FileText aria-hidden="true" /></span>
+      <p>
+        <strong>{attachment.filename}</strong>
+        <small>{formatFileSize(attachment.size)} · armazenado localmente · abertura desativada</small>
+      </p>
+      <ShieldCheck aria-hidden="true" />
+    </div>
+  );
 }
