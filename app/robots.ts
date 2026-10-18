@@ -7,6 +7,11 @@ const publicSearchAgents = [
   "Perplexity-User",
 ];
 
+const restrictedBots = [
+  "GPTBot",
+  "ClaudeBot",
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
@@ -15,14 +20,10 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: ["/__metrics/", "/__contact", "/_local-media/", "/local-media-sw.js"],
       })),
-      {
-        userAgent: "GPTBot",
+      ...restrictedBots.map((userAgent) => ({
+        userAgent,
         disallow: "/",
-      },
-      {
-        userAgent: "ClaudeBot",
-        disallow: "/",
-      },
+      })),
       {
         userAgent: "*",
         allow: "/",

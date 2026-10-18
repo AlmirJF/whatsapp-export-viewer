@@ -47,9 +47,23 @@ para criar e operar a instalação na VPS.
 
 ## Hospedagem
 
-O build usa Vinext e
-permanece compatível com um ambiente Cloudflare Workers, caso uma hospedagem
-seja configurada futuramente.
+O build usa Vinext e permanece compatível com um ambiente Cloudflare Workers,
+caso uma hospedagem seja configurada futuramente.
+
+## Contribuir
+
+Este é um projeto open-source! Contribuições são bem-vindas — correções de bugs,
+novas funcionalidades, melhorias de documentação e reportes de problemas.
+
+- Leia o [guia de contribuição](CONTRIBUTING.md) antes de enviar um PR.
+- Siga o [código de conduta](CODE_OF_CONDUCT.md) em todas as interações.
+- Vulnerabilidades de segurança devem ser reportadas via [SECURITY.md](SECURITY.md), não em issues públicas.
+
+## Licença
+
+Distribuído sob a licença **MIT**. Veja [LICENSE](LICENSE) para detalhes.
+
+---
 
 WhatsApp é uma marca comercial da WhatsApp LLC. Este é um produto independente,
 sem afiliação, patrocínio ou endosso da WhatsApp LLC.
