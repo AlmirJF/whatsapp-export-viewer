@@ -35,7 +35,7 @@ para um servidor.
 - Mensagens ficam no IndexedDB do navegador
 - Fotos, vídeos e áudios ficam no Cache Storage, entregues por um Service Worker
 - O servidor não possui nenhum endpoint que aceite arquivos de conversa
-- A rota de mídia local retorna `404` no servidor — só o Service Worker a atende
+- A rota de mídia local retorna `404` no servidor. Só o Service Worker a atende
 - O aplicativo não cria URLs `blob:`, não oferece download de anexos e não abre documentos importados
 - Somente dados do formulário de contato (preenchido voluntariamente) são armazenados, com retenção máxima de 12 meses
 - Exportações `.zip`, `_chat.txt` e diretórios de teste são ignorados pelo Git
@@ -60,11 +60,11 @@ npm run build
 
 O repositório inclui uma imagem Docker endurecida, Caddy com HTTPS automático e
 Portainer acessível somente por túnel SSH. Consulte [DEPLOYMENT.md](DEPLOYMENT.md)
-para criar e operar a instalação na VPS.
+para criar e operar a instalação em um servidor VPS.
 
 ## Contribuir
 
-Contribuições são bem-vindas — correções de bugs, novas funcionalidades,
+Contribuições são bem-vindas: correções de bugs, novas funcionalidades,
 melhorias de documentação e reportes de problemas.
 
 - Leia o [guia de contribuição](CONTRIBUTING.md) antes de enviar um PR

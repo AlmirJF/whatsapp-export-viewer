@@ -23,7 +23,7 @@ Recommended starting point:
 
 - A supported Linux distribution
 - Enough CPU and memory for the Docker services and expected traffic
-- Enough disk space for the application and its data
+- 50 GB disk
 - A public server address
 
 Configure the firewall with only these ingress rules:
@@ -35,7 +35,7 @@ Configure the firewall with only these ingress rules:
 | `0.0.0.0/0` | TCP | 443 | HTTPS |
 | `0.0.0.0/0` | UDP | 443 | HTTP/3 (optional) |
 
-Do not expose ports 3000, 8000, 9000, 9180, or 9443 in public deployments.
+Do not expose ports 3000, 8000, 9000, 9180, or 9443 publicly.
 
 ## 2. Public address
 

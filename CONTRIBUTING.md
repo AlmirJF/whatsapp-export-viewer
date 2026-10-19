@@ -32,7 +32,7 @@ Obrigado pelo interesse em contribuir! Este documento explica como participar do
    git checkout -b feat/nome-da-funcionalidade
    ```
 
-3. Faça suas alterações mantendo o código em **português** (comentários, nomes descritivos), seguindo o padrão já adotado no projeto.
+3. Faça suas alterações seguindo os padrões de código do projeto descritos abaixo.
 4. Rode os testes:
 
    ```bash
@@ -41,12 +41,12 @@ Obrigado pelo interesse em contribuir! Este documento explica como participar do
    npm run build
    ```
 
-5. Faça commit seguindo [Conventional Commits](https://www.conventionalcommits.org/):
+5. Faça commit seguindo [Conventional Commits](https://www.conventionalcommits.org/) em pt-BR:
 
    ```
-   feat: adicionar suporte a mensagens de áudio
-   fix: corrigir ordenação de mensagens com fuso horário
-   docs: atualizar instruções de deploy
+   feat: adiciona suporte a mensagens de áudio
+   fix: corrige ordenação de mensagens com fuso horário
+   docs: atualiza instruções de deploy
    ```
 
 6. Abra um Pull Request para a branch `main` usando o [template de PR](https://github.com/AlmirJF/whatsapp-export-viewer/compare).
@@ -55,10 +55,12 @@ Obrigado pelo interesse em contribuir! Este documento explica como participar do
 ### Padrões de código
 
 - **TypeScript** para todo o código do app e do worker.
+- **Identificadores em inglês** (variáveis, funções, tipos, constantes).
+- **Comentários e documentação em português** para explicar regras de negócio, decisões e orquestração.
 - **React Server Components** por padrão; use `"use client"` apenas quando necessário.
-- Mantenha funções pequenas e nomeadas de forma descritiva.
+- Mantenha funções pequenas e com responsabilidade única.
 - Não introduza dependências que enviem dados para serviços externos.
-- O Service Worker é a única forma de entregar mídia local — não crie rotas de upload ou download.
+- O Service Worker é a única forma de entregar mídia local. Não crie rotas de upload ou download.
 
 ### Testes
 
@@ -74,7 +76,7 @@ Toda nova funcionalidade ou correção de bug deve incluir um teste que cubra o 
 
 - Nunca commite conversas reais, mídias ou dados pessoais.
 - O `.gitignore` já bloqueia arquivos `.zip`, `_chat.txt` e diretórios de exportação.
-- O repositório não deve conter nenhum dado de conversa — apenas código e fixtures de teste fictícios.
+- O repositório não deve conter nenhum dado de conversa, apenas código e fixtures de teste fictícios.
 
 ## Segurança
 

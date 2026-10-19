@@ -18,7 +18,7 @@ export default function LegalPage({ eyebrow, title, intro, children }: LegalPage
   return (
     <main className="landing legalPage">
       <header className="landingNav legalNav">
-        <a className="brand" href="/" aria-label="WhatsApp Export Viewer — página inicial">
+        <a className="brand" href="/" aria-label="WhatsApp Export Viewer, página inicial">
           <MessageCircleMore aria-hidden="true" className="brandIcon" />
           <span>WhatsApp Export Viewer</span>
         </a>

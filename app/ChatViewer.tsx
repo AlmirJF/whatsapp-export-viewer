@@ -389,7 +389,7 @@ export default function ChatViewer() {
       }
 
       setProgress(100);
-      setProgressText("Pronto — nada saiu do seu computador.");
+      setProgressText("Pronto. Nada saiu do seu computador.");
       setConversations((current) => [...current, ...imported]);
       setActiveId(imported[0]?.id ?? null);
       setMobileView("messages");
@@ -481,7 +481,7 @@ export default function ChatViewer() {
     return (
       <main className={`landing${darkMode ? " dark" : ""}`}>
         <header className="landingNav">
-          <a className="brand" href="#inicio" aria-label="WhatsApp Export Viewer — início">
+          <a className="brand" href="#inicio" aria-label="WhatsApp Export Viewer, início">
             <MessageCircleMore aria-hidden="true" className="brandIcon" />
             <span>WhatsApp Export Viewer</span>
           </a>
@@ -501,7 +501,7 @@ export default function ChatViewer() {
             <span className="eyebrow"><span className="statusDot" /> Gratuito e sem cadastro</span>
             <h1>Abra conversas exportadas<br /><em>do WhatsApp no navegador.</em></h1>
             <p className="heroLead">
-              Transforme o ZIP exportado pelo WhatsApp em uma conversa fácil de ler, pesquisar e navegar — sem instalar nada.
+              Transforme o ZIP exportado pelo WhatsApp em uma conversa fácil de ler, pesquisar e navegar, sem instalar nada.
             </p>
             <div className="privacyPromise">
               <ShieldCheck aria-hidden="true" className="privacyShieldIcon" />
@@ -572,7 +572,7 @@ export default function ChatViewer() {
                   <div className="progressTrack" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label="Progresso da leitura local">
                     <span style={{ width: `${progress}%` }} />
                   </div>
-                  <small>Processamento local — sem upload para a internet.</small>
+                  <small>Processamento local, sem upload para a internet.</small>
                 </div>
               )}
               {error && <p className="errorMessage" role="alert" tabIndex={-1} ref={errorRef}>{error}</p>}
