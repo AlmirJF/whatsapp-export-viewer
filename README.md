@@ -1,15 +1,42 @@
 # WhatsApp Export Viewer
 
-Abra e leia conversas exportadas do WhatsApp diretamente no navegador.
-O projeto transforma o arquivo ZIP em uma interface simples, pesquisável e
-familiar, sem exigir instalação ou cadastro.
+A maneira mais fácil de abrir e ler conversas exportadas do WhatsApp no navegador,
+sem instalar nada e sem enviar seus arquivos para nenhum servidor.
 
-> WhatsApp Export Chat Viewer para arquivos ZIP, com processamento 100% local.
+**Acesse agora:** [whatsapp-viewer.runcode.qzz.io](https://whatsapp-viewer.runcode.qzz.io)
 
-O arquivo ZIP é aberto e processado localmente pelo navegador. As conversas e
-mídias não são enviadas para um servidor externo. Mensagens são persistidas no
-IndexedDB e anexos permitidos no Cache Storage do próprio navegador. Um Service
-Worker entrega fotos, vídeos e áudios diretamente desse armazenamento local.
+## O problema que resolve
+
+Exportar uma conversa do WhatsApp gera um arquivo `.zip` com um `_chat.txt` e
+as mídias. Abrir esse arquivo e ler a conversa de forma legível não é simples:
+o texto bruto é difícil de ler, as ferramentas online existentes pedem upload
+para servidores externos e a maioria não suporta fotos, vídeos e áudios.
+
+O WhatsApp Export Viewer resolve isso: você arrasta o ZIP, a conversa aparece
+numa interface familiar — como o próprio WhatsApp — e nada sai do seu dispositivo.
+
+## Como usar
+
+1. Acesse [whatsapp-viewer.runcode.qzz.io](https://whatsapp-viewer.runcode.qzz.io)
+2. Exporte uma conversa no WhatsApp (**Conversa → Mais → Exportar conversa**)
+3. Arraste o arquivo `.zip` para a página
+4. Leia, pesquise e navegue pelas mensagens
+
+Sem cadastro. Sem instalação. Sem upload.
+
+## Privacidade
+
+Todo o processamento acontece no seu navegador. O arquivo ZIP nunca é enviado
+para um servidor.
+
+- Mensagens ficam no IndexedDB do navegador
+- Fotos, vídeos e áudios ficam no Cache Storage, entregues por um Service Worker
+- O servidor não possui nenhum endpoint que aceite arquivos de conversa
+- A rota de mídia local retorna `404` no servidor — só o Service Worker a atende
+- O aplicativo não cria URLs `blob:`, não oferece download de anexos e não abre documentos importados
+- Somente dados do formulário de contato (preenchido voluntariamente) são armazenados, com retenção máxima de 12 meses
+- Exportações `.zip`, `_chat.txt` e diretórios de teste são ignorados pelo Git
+- O repositório não contém conversas, mídias ou dados pessoais
 
 ## Executar localmente
 
@@ -26,38 +53,20 @@ Para validar a versão de produção:
 npm run build
 ```
 
-## Docker e VPS
+## Deploy próprio (Docker)
 
 O repositório inclui uma imagem Docker endurecida, Caddy com HTTPS automático e
 Portainer acessível somente por túnel SSH. Consulte [DEPLOYMENT.md](DEPLOYMENT.md)
 para criar e operar a instalação na VPS.
 
-## Privacidade
-
-- Todo o processamento das conversas acontece no dispositivo do usuário.
-- O projeto não possui endpoint para receber arquivos de conversa.
-- A rota reservada para mídia local responde `404` no servidor e somente pode
-  ser atendida pelo Service Worker quando o arquivo existe no navegador.
-- O aplicativo não cria URLs `blob:`, não oferece anexos para download e não
-  abre documentos importados.
-- Somente os dados digitados voluntariamente no formulário de contato são
-  enviados e armazenados no serviço interno, com retenção máxima de 12 meses.
-- Exportações `.zip`, `_chat.txt` e diretórios de teste são ignorados pelo Git.
-- O repositório não contém conversas, mídias ou dados pessoais usados durante o desenvolvimento.
-
-## Hospedagem
-
-O build usa Vinext e permanece compatível com um ambiente Cloudflare Workers,
-caso uma hospedagem seja configurada futuramente.
-
 ## Contribuir
 
-Este é um projeto open-source! Contribuições são bem-vindas — correções de bugs,
-novas funcionalidades, melhorias de documentação e reportes de problemas.
+Contribuições são bem-vindas — correções de bugs, novas funcionalidades,
+melhorias de documentação e reportes de problemas.
 
-- Leia o [guia de contribuição](CONTRIBUTING.md) antes de enviar um PR.
-- Siga o [código de conduta](CODE_OF_CONDUCT.md) em todas as interações.
-- Vulnerabilidades de segurança devem ser reportadas via [SECURITY.md](SECURITY.md), não em issues públicas.
+- Leia o [guia de contribuição](CONTRIBUTING.md) antes de enviar um PR
+- Siga o [código de conduta](CODE_OF_CONDUCT.md) em todas as interações
+- Vulnerabilidades de segurança devem ser reportadas via [SECURITY.md](SECURITY.md), não em issues públicas
 
 ## Licença
 
