@@ -9,11 +9,12 @@ sem instalar nada e sem enviar seus arquivos para nenhum servidor.
 
 Exportar uma conversa do WhatsApp gera um arquivo `.zip` com um `_chat.txt` e
 as mídias. Abrir esse arquivo e ler a conversa de forma legível não é simples:
-o texto bruto é difícil de ler, as ferramentas online existentes pedem upload
-para servidores externos e a maioria não suporta fotos, vídeos e áudios.
+o texto bruto é difícil de ler, as poucas ferramentas online existentes pedem
+upload para servidores de terceiros, a maioria não é de código aberto e quase
+nenhuma suporta fotos, vídeos e áudios.
 
 O WhatsApp Export Viewer resolve isso: você arrasta o ZIP, a conversa aparece
-numa interface familiar — como o próprio WhatsApp — e nada sai do seu dispositivo.
+numa interface familiar como o próprio WhatsApp e nada sai do seu dispositivo.
 
 ## Como usar
 
