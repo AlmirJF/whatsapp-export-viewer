@@ -19,12 +19,8 @@ container. The application has no upload route and no conversation volume.
 
 ## 1. Server
 
-Recommended starting point:
-
-- A supported Linux distribution
-- Enough CPU and memory for the Docker services and expected traffic
-- 50 GB disk
-- A public server address
+Use a supported Linux server with enough CPU, memory, and disk space for the
+Docker services and expected traffic.
 
 Configure the firewall with only these ingress rules:
 
@@ -39,8 +35,8 @@ Do not expose ports 3000, 8000, 9000, 9180, or 9443 publicly.
 
 ## 2. Public address
 
-The production hostname is proxied by Cloudflare and points to the reserved
-server public IP:
+The production hostname is proxied by Cloudflare and points to the server's
+public address:
 
 ```text
 SITE_ADDRESS=whatsapp-viewer.runcode.qzz.io
